@@ -27,8 +27,8 @@ extern "C" {
 #define SOAP_DBGLOG     printf
 #define SOAP_DBGERR     printf
 
-#define USERNAME        "admin"                                                 // ��֤��Ϣ���û������룩
-#define PASSWORD        "qwert54321"
+#define USERNAME        "onvif"                                                 // ��֤��Ϣ���û������룩
+#define PASSWORD        "12345qwert"//"12345qazwsx"
 
 #define SOAP_TO         "urn:schemas-xmlsoap-org:ws:2005:04:discovery"
 #define SOAP_ACTION     "http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe"
@@ -85,14 +85,14 @@ void            ONVIF_soap_delete(struct soap *soap);
 int             ONVIF_SetAuthInfo(struct soap *soap, const char *username, const char *password);
 void            ONVIF_init_header(struct soap *soap);
 void            ONVIF_init_ProbeType(struct soap *soap, struct wsdd__ProbeType *probe);
-void            ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr));
+void            ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr,const char* username,const char* password),const char* name,const char* pswd);
 
-int             ONVIF_GetCapabilities2(const char *DeviceXAddr, struct tagCapabilities *capa);
-int             ONVIF_GetProfiles(const char *MediaXAddr, struct tagProfile **profiles);
+int             ONVIF_GetCapabilities2(const char *DeviceXAddr, struct tagCapabilities *capa,const char* username,const char* password);
+int             ONVIF_GetProfiles(const char *MediaXAddr, struct tagProfile **profiles,const char* username,const char* password);
 int             make_uri_withauth(char *src_uri, char *username, char *password, char *dest_uri, unsigned int size_dest_uri);
 
-int 				ONVIF_GetDeviceInformation(const char *DeviceXAddr);
-int 				ONVIF_GetCapabilities(const char *DeviceXAddr);
+int 			ONVIF_GetDeviceInformation(const char *DeviceXAddr,const char* username,const char* password);
+int 			ONVIF_GetCapabilities(const char *DeviceXAddr,const char* username,const char* password);
 
 #ifdef __cplusplus
 }

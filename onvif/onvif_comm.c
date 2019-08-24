@@ -148,7 +148,7 @@ void ONVIF_init_ProbeType(struct soap *soap, struct wsdd__ProbeType *probe)
     return;
 }
 
-void ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr))
+void ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr,const char* username,const char* password),const char* name,const char* pswd)
 {
     int i;
     int result = 0;
@@ -178,7 +178,7 @@ void ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr))
                     for(i = 0; i < rep.wsdd__ProbeMatches->__sizeProbeMatch; i++) {
                         probeMatch = rep.wsdd__ProbeMatches->ProbeMatch + i;
                         if (NULL != cb) {
-                            cb(probeMatch->XAddrs);                             // 使用设备服务地址执行函数回调
+                            cb(probeMatch->XAddrs,name,pswd);                             // 使用设备服务地址执行函数回调
                         }
                     }
                 }
@@ -208,7 +208,7 @@ void ONVIF_DetectDevice(void (*cb)(char *DeviceXAddr))
 **备注：
         1). 注意：一个码流（如主码流）可以包含视频和音频数据，也可以仅仅包含视频数据。
 ************************************************************************/
-int ONVIF_GetProfiles(const char *MediaXAddr, struct tagProfile **profiles)
+int ONVIF_GetProfiles(const char *MediaXAddr, struct tagProfile **profiles,const char* username,const char* password)
 {
     int i = 0;
     int result = 0;
@@ -219,7 +219,7 @@ int ONVIF_GetProfiles(const char *MediaXAddr, struct tagProfile **profiles)
     SOAP_ASSERT(NULL != MediaXAddr);
     SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
 
-    ONVIF_SetAuthInfo(soap, USERNAME, PASSWORD);
+    ONVIF_SetAuthInfo(soap, username, password);
 
     memset(&req, 0x00, sizeof(req));
     memset(&rep, 0x00, sizeof(rep));
@@ -273,7 +273,7 @@ EXIT:
 **备注：
     1). 其中最主要的参数之一是媒体服务地址
 ************************************************************************/
-int ONVIF_GetCapabilities2(const char *DeviceXAddr, struct tagCapabilities *capa)
+int ONVIF_GetCapabilities2(const char *DeviceXAddr, struct tagCapabilities *capa,const char* username,const char* password)
 {
     int result = 0;
     struct soap *soap = NULL;
@@ -284,7 +284,7 @@ int ONVIF_GetCapabilities2(const char *DeviceXAddr, struct tagCapabilities *capa
     SOAP_ASSERT(NULL != capa);
     SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
 
-    ONVIF_SetAuthInfo(soap, USERNAME, PASSWORD);
+    ONVIF_SetAuthInfo(soap, username, password);
 
     memset(&req, 0x00, sizeof(req));
     memset(&rep, 0x00, sizeof(rep));
@@ -372,7 +372,7 @@ EXIT:
 }
 
 
-int ONVIF_GetDeviceInformation(const char *DeviceXAddr)
+int ONVIF_GetDeviceInformation(const char *DeviceXAddr,const char* username,const char* password)
 {
     int result = 0;
     struct soap *soap = NULL;
@@ -382,7 +382,7 @@ int ONVIF_GetDeviceInformation(const char *DeviceXAddr)
     SOAP_ASSERT(NULL != DeviceXAddr);
     SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
 
-    ONVIF_SetAuthInfo(soap, USERNAME, PASSWORD);
+    ONVIF_SetAuthInfo(soap, username, password);
 
     memset(&devinfo_req, 0x00, sizeof(devinfo_req));
     memset(&devinfo_resp, 0x00, sizeof(devinfo_resp));
@@ -400,7 +400,7 @@ EXIT:
 }
 
 
-int ONVIF_GetCapabilities(const char *DeviceXAddr)
+int ONVIF_GetCapabilities(const char *DeviceXAddr,const char* username,const char* password)
 {
     int result = 0;
     struct soap *soap = NULL;
@@ -410,7 +410,7 @@ int ONVIF_GetCapabilities(const char *DeviceXAddr)
     SOAP_ASSERT(NULL != DeviceXAddr);
     SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
 
-    ONVIF_SetAuthInfo(soap, USERNAME, PASSWORD);
+    ONVIF_SetAuthInfo(soap, username, password);
 
     memset(&req, 0x00, sizeof(req));
     memset(&rep, 0x00, sizeof(rep));

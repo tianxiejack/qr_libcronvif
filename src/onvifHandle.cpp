@@ -14,50 +14,50 @@
 
 #include <math.h>
 
-static IOnvif* gOnvif = new COnvif();
-
-IOnvif* IOnvif::getinstance()
+IOnvif* IOnvif::getinstance(const char* ip,const char* username,const char* password)
 {
-	return gOnvif;
+	IOnvif* ponvif = new COnvif(ip,username,password);
+	return ponvif;
 }
 
-COnvif::COnvif()
+COnvif::COnvif(const char* ip,const char* username,const char* password)
 {
 	memset(m_profile,'\0',sizeof(m_profile));	
 	memset(m_ip,'\0',sizeof(m_ip));
-	memset(m_endpoint, '\0', 255);
-	memset(m_PTZendpoint, '\0', 255);
-	
+	memset(m_endpoint, '\0', sizeof(m_endpoint));
+	memset(m_PTZendpoint, '\0', sizeof(m_PTZendpoint));
+	memset(m_username,'\0',sizeof(m_username));
+	memset(m_password,'\0',sizeof(m_password));
+	init(ip,username,password);
 }
 
 COnvif::~COnvif()
 {
 }
 
-void COnvif::init()
+void COnvif::init(const char* ip,const char* username,const char* password)
 {
-	sprintf(m_ip,"192.168.0.64"); 
+	sprintf(m_ip,ip);
 	sprintf(m_endpoint, "http://%s/onvif/device_service", m_ip);  
 	sprintf(m_PTZendpoint, "http://%s/onvif/PTZ", m_ip);
-	printf("PTZendpoint is %s \n", m_PTZendpoint);		
-
-
+	sprintf(m_username,username);
+	sprintf(m_password,password);
+	
 	getProfileToken();
-
 	return;
 }
 
 void COnvif::detectDevice()
 {
-	ONVIF_DetectDevice(cb_discovery);
+	ONVIF_DetectDevice(cb_discovery,m_username,m_password);
 	return;
 }
 
 
-void COnvif::cb_discovery(char *DeviceXAddr)
+void COnvif::cb_discovery(char *DeviceXAddr,const char* username,const char* password)
 {
-	ONVIF_GetDeviceInformation(DeviceXAddr);
-	ONVIF_GetCapabilities(DeviceXAddr);
+	ONVIF_GetDeviceInformation(DeviceXAddr,username,password);
+	ONVIF_GetCapabilities(DeviceXAddr,username,password);
 	return;
 }
 
@@ -95,7 +95,7 @@ void COnvif::getProfileToken()
 	}	
 	printf("\n");
 	
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 	if(soap_call___trt__GetProfiles(soap,Mediaddr,NULL,&getProfiles,&response)==SOAP_OK)
 	{
 		strcpy(m_profile, response.Profiles[0].token);
@@ -131,7 +131,7 @@ int COnvif::getPtzStatus(float& p,float& t,float& z)
 	memset(&statusRep, 0x0, sizeof(statusRep));
 			
 	statusReq.ProfileToken = m_profile;
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 
 	int result;
 	result = soap_call___tptz__GetStatus(soap, m_PTZendpoint, NULL, &statusReq, &statusRep);			
@@ -174,7 +174,7 @@ int COnvif::stop()
 	*ptz_req.PanTilt = xsd__boolean__true_;
 	*ptz_req.Zoom = xsd__boolean__true_;
 	
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 	int result = soap_call___tptz__Stop(soap, m_PTZendpoint, NULL, &ptz_req, &ptz_resp);
 	SOAP_CHECK_ERROR(result, soap, "ptzStop");
 	
@@ -190,7 +190,7 @@ int COnvif::continuesMove(float p,float t,float z)
 {
 	struct soap *soap = NULL;
 	SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
-	
+
 	struct _tptz__ContinuousMove ptz_req;
 	struct _tptz__ContinuousMoveResponse ptz_resp;
 	memset(&ptz_req, 0x0, sizeof(ptz_req));
@@ -201,7 +201,6 @@ int COnvif::continuesMove(float p,float t,float z)
 	ptz_req.Velocity = soap_new_tt__PTZSpeed(soap,-1);
 	ptz_req.Velocity->PanTilt = soap_new_tt__Vector2D(soap, -1);
 	ptz_req.Velocity->Zoom = soap_new_tt__Vector1D(soap,-1);
-
 	
 	if((fabs(p)-1.0) < m_FLOATZERO)
 		ptz_req.Velocity->PanTilt->x = p;
@@ -211,16 +210,16 @@ int COnvif::continuesMove(float p,float t,float z)
 
 	if((fabs(z)-1.0) < m_FLOATZERO)
 		ptz_req.Velocity->Zoom->x = z;
-	
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+		
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
+
 	int result = soap_call___tptz__ContinuousMove(soap, m_PTZendpoint, NULL, &ptz_req, &ptz_resp);
 	SOAP_CHECK_ERROR(result, soap, "continusMove");
 
 EXIT:
     soap_destroy(soap); // clean up class instances
     soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-    soap_done(soap); // close master socket and detach context
-    printf("\n");	
+    soap_done(soap); // close master socket and detach context	
     return result;	
 }
 
@@ -251,7 +250,7 @@ int COnvif::relativeMove(float p,float t,float z)
 	if((fabs(z)-1.0) < m_FLOATZERO)
 		ptz_req.Translation->Zoom->x = z;
 
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 	int result = soap_call___tptz__RelativeMove(soap, m_PTZendpoint, NULL, &ptz_req, &ptz_resp);
 	SOAP_CHECK_ERROR(result, soap, "relativeMove");
 	
@@ -303,7 +302,7 @@ int COnvif::absoluteMove(float p,float t,float z,float pspeed,float tspeed,float
 	if((fabs(zspeed)-1.0) < m_FLOATZERO)
 		absoluteMove.Speed->Zoom->x = zspeed;
 
-	soap_wsse_add_UsernameTokenDigest(soap, NULL, USERNAME, PASSWORD);
+	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 	int result = soap_call___tptz__AbsoluteMove(soap, m_PTZendpoint, NULL, &absoluteMove, 
 	                                        &absoluteMoveResponse);		
 	

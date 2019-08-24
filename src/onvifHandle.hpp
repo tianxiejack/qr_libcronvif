@@ -14,7 +14,7 @@
 class COnvif : public IOnvif
 {
 public:
-	COnvif();
+	COnvif(const char* ip,const char* username,const char* password);
 	virtual ~COnvif();
 	
 	void detectDevice();
@@ -26,18 +26,20 @@ public:
 
 
 private:
-	void init();
+	void init(const char* ip,const char* username,const char* password);
 	void getProfileToken();
 	
 	
 
 private:	
-	static void cb_discovery(char *DeviceXAddr);
+	static void cb_discovery(char *DeviceXAddr,const char* username,const char* password);
 	char m_profile[256];
 	char m_ip[256];
 	char m_endpoint[255];
 	char m_PTZendpoint[255];
 	const float m_FLOATZERO = 0.000001;
+	char m_username[256];
+	char m_password[256];
 };
 
 #endif /* ONVIFHANDLE_HPP_ */
