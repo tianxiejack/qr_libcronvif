@@ -152,7 +152,6 @@ EXIT:
     soap_destroy(soap); // clean up class instances
     soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
     soap_done(soap); // close master socket and detach context
-    printf("\n");		
     return result;
 }
 
