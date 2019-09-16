@@ -1,11 +1,4 @@
-/************************************************************************
-**
-** 作者：许振坪
-** 日期：2017-05-03
-** 博客：http://blog.csdn.net/benkaoya
-** 描述：IPC示例代码公共函数
-**
-************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -61,6 +54,11 @@ void ONVIF_soap_delete(struct soap *soap)
     soap_end(soap);                                                             // Clean up deserialized data (except class instances) and temporary data
     soap_done(soap);                                                            // Reset, close communications, and remove callbacks
     soap_free(soap);                                                            // Reset and deallocate the context created with soap_new or soap_copy
+
+	//soap_destroy(soap); // clean up class instances
+	//soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
+	//soap_done(soap); // close master socket and detach context	
+
 }
 
 /************************************************************************
@@ -85,7 +83,6 @@ int ONVIF_SetAuthInfo(struct soap *soap, const char *username, const char *passw
     SOAP_CHECK_ERROR(result, soap, "add_UsernameTokenDigest");
 
 EXIT:
-
     return result;
 }
 

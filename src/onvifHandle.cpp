@@ -110,9 +110,7 @@ void COnvif::getProfileToken()
 											*soap_faultstring(soap));  
 	}
 
-	soap_destroy(soap); // clean up class instances
-	soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-	soap_done(soap); // close master socket and detach context	
+	ONVIF_soap_delete(soap); 
 	return;	
 }
 
@@ -123,13 +121,11 @@ int COnvif::getPtzStatus(float& p,float& t,float& z)
 	struct soap *soap = NULL;
 	SOAP_ASSERT(NULL != (soap = ONVIF_soap_new(SOAP_SOCK_TIMEOUT)));
 
-	char Mediaddr[256]="";
-
 	struct _tptz__GetStatus statusReq;
 	struct _tptz__GetStatusResponse statusRep;
 	memset(&statusReq, 0x0, sizeof(statusReq));
 	memset(&statusRep, 0x0, sizeof(statusRep));
-			
+
 	statusReq.ProfileToken = m_profile;
 	soap_wsse_add_UsernameTokenDigest(soap, NULL, m_username, m_password);
 
@@ -149,9 +145,7 @@ int COnvif::getPtzStatus(float& p,float& t,float& z)
 	}
 	
 EXIT:
-    soap_destroy(soap); // clean up class instances
-    soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-    soap_done(soap); // close master socket and detach context
+	ONVIF_soap_delete(soap);
     return result;
 }
 
@@ -178,9 +172,7 @@ int COnvif::stop()
 	SOAP_CHECK_ERROR(result, soap, "ptzStop");
 	
 EXIT:	 
-	soap_destroy(soap); // clean up class instances
-	soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-	soap_done(soap); // close master socket and detach context
+	ONVIF_soap_delete(soap); 
 	return result;
 }
 
@@ -216,9 +208,7 @@ int COnvif::continuesMove(float p,float t,float z)
 	SOAP_CHECK_ERROR(result, soap, "continusMove");
 
 EXIT:
-    soap_destroy(soap); // clean up class instances
-    soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-    soap_done(soap); // close master socket and detach context	
+	ONVIF_soap_delete(soap); 
     return result;	
 }
 
@@ -254,9 +244,7 @@ int COnvif::relativeMove(float p,float t,float z)
 	SOAP_CHECK_ERROR(result, soap, "relativeMove");
 	
 EXIT:
-    soap_destroy(soap); // clean up class instances
-    soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-    soap_done(soap); // close master socket and detach context	
+	ONVIF_soap_delete(soap); 
     return result;
 }
 
@@ -307,9 +295,7 @@ int COnvif::absoluteMove(float p,float t,float z,float pspeed,float tspeed,float
 	
 	SOAP_CHECK_ERROR(result, soap, "absoluteMove");
 EXIT:
-    soap_destroy(soap); // clean up class instances
-    soap_end(soap); // clean up everything and close socket, // userid and passwd were deallocated
-    soap_done(soap); // close master socket and detach context
+	ONVIF_soap_delete(soap); 
     return result;
 }
 
